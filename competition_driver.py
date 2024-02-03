@@ -1,6 +1,7 @@
 import os
 import ast
 import time
+import signal
 import string
 import inspect
 import importlib
@@ -68,16 +69,35 @@ def generate_random_list(size:int,type:str='int',sorted:bool=False,reverse:bool=
 def is_sorted(lst:list)->bool:
     return all(lst[i] <= lst[i+1] for i in range(len(lst)-1))
 
+# Définir le gestionnaire de signal pour le timeout
+def handler(signum, frame):
+    raise TimeoutError()
+
 # Tester un algorithme de tri
-def test_sorting_algorithm(algorithm:FunctionType,lst:list)->tuple[None|float,str]:
-    if isinstance(algorithm, FunctionType) and is_function_safe(algorithm):  # Vérifier que l'attribut est une fonction
-        start_time = time.time()
-        sorted_lst = algorithm(lst)
-        end_time = time.time()
-        execution_time = end_time - start_time
-        if is_sorted(sorted_lst):
-            return execution_time, 'Qualifié'
-    return None, 'Disqualifié'  # L'attribut n'est pas une fonction ou l'algorithme est disqualifié
+def test_sorting_algorithm(algorithm, lst):
+    if not is_function_safe(algorithm):return None, 'Disqualifié (fonction dangereuse)'
+    if isinstance(algorithm, FunctionType):  # Vérifier que l'attribut est une fonction
+        try:
+            # Définir le signal de timeout
+            signal.signal(signal.SIGALRM, handler)
+            signal.alarm(600)  # Définir un timeout de 10 minutes
+
+            start_time = time.time()
+            sorted_lst = algorithm(lst)
+            end_time = time.time()
+
+            # Désactiver le signal de timeout
+            signal.alarm(0)
+
+            execution_time = end_time - start_time
+            if is_sorted(sorted_lst):
+                return execution_time, 'Qualifié'
+            else:
+                return None, 'Disqualifié (la liste n\'est pas triée)'
+        except Exception as e:
+            return None, f'Disqualifié ({str(e)})'
+    return None, 'Disqualifié (pas une fonction)'
+
 # Le concours
 def contest(scale:int=3)->pd.DataFrame:
     clear_terminal()
