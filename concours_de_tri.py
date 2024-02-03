@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 import types
@@ -6,6 +7,12 @@ import importlib
 import pandas as pd
 from datetime import datetime
 from random import random,uniform,choice
+
+def clear_terminal():
+    if os.name == 'nt':  # Pour Windows
+        os.system('cls')
+    else:  # Pour Unix (Linux, macOS)
+        os.system('clear')
 
 def randint(mini, maxi) -> int: return int(mini + random() * (maxi - mini))
 
@@ -50,34 +57,40 @@ def test_sorting_algorithm(algorithm, lst):
     return None, 'Disqualifié'  # L'attribut n'est pas une fonction ou l'algorithme est disqualifié
 # Le concours
 def contest():
+    clear_terminal()
+    print(f'-------------  contest results the {datetime.now().strftime("[%d-%m-%Y] at [%H-%M-%S]")}  -------------')
     # Définir les épreuves
     challenges = [
-        {'size': 1000, 'type': 'int'},
-        {'size': 5000, 'type': 'int'},
-        {'size': 10000, 'type': 'int'},
-        {'size': 1000, 'type': 'float'},
-        {'size': 1000, 'type': 'str'},
-        {'size': 1000, 'type': 'int', 'sorted': True},
-        {'size': 1000, 'type': 'int', 'reverse': True},
-        {'size': 1000, 'type': 'int', 'duplicates': True},
+        {'name': 'Tri de liste d\'entiers de taille 1000', 'size': 1000, 'type': 'int'},
+        {'name': 'Tri de liste d\'entiers de taille 5000', 'size': 5000, 'type': 'int'},
+        {'name': 'Tri de liste d\'entiers de taille 10000', 'size': 10000, 'type': 'int'},
+        {'name': 'Tri de liste de flottants de taille 1000', 'size': 1000, 'type': 'float'},
+        {'name': 'Tri de liste de chaînes de caractères de taille 1000', 'size': 1000, 'type': 'str'},
+        {'name': 'Tri de liste d\'entiers presque triée de taille 1000', 'size': 1000, 'type': 'int', 'sorted': True},
+        {'name': 'Tri de liste d\'entiers en ordre inverse de taille 1000', 'size': 1000, 'type': 'int', 'reverse': True},
+        {'name': 'Tri de liste d\'entiers avec beaucoup de doublons de taille 1000', 'size': 1000, 'type': 'int', 'duplicates': True},
     ]
 
     # Tester chaque algorithme de tri pour chaque épreuve
+    keys_to_exclude = ['name']
     for challenge in challenges:
-        lst = generate_random_list(**challenge)
+        lst = generate_random_list(**{k: v for k, v in challenge.items() if k not in keys_to_exclude})
         for algorithm in dir(sort_pack):
             if algorithm.startswith('__'):
                 continue
             execution_time, status = test_sorting_algorithm(getattr(sort_pack, algorithm), lst)
             # Ajouter le score et le statut à la DataFrame
-            scores.loc[len(scores)] = [algorithm, execution_time, status, str(challenge)]
+            scores.loc[len(scores)] = [algorithm, execution_time, status, challenge['name']]
 
         # Trier la DataFrame par temps d'exécution et attribuer les rangs pour l'épreuve actuelle
-        current_challenge_scores = scores[scores['Épreuve'] == str(challenge)]
+        current_challenge_scores = scores[scores['Épreuve'] == challenge['name']]
         current_challenge_scores.sort_values(by='Temps d\'exécution', inplace=True, na_position='last')
         current_challenge_scores['Rang'] = current_challenge_scores['Temps d\'exécution'].rank(method='min')
 
-        print(f"Tableau des scores pour l'épreuve {challenge} :")
+        # Supprimer la colonne 'Épreuve'
+        current_challenge_scores = current_challenge_scores.drop(columns=['Épreuve'])
+
+        print(f"Tableau des scores pour l'épreuve de {challenge['name']} :")
         print(current_challenge_scores)
 
 # Lancer le concours
