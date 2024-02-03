@@ -2,6 +2,7 @@ import time
 import random
 import importlib
 import sys
+import pandas as pd
 
 # Importer les algorithmes de tri du module sort_pack
 sys.path.insert(0, 'sort_pack')
@@ -15,6 +16,8 @@ def generate_random_list(size):
 def is_sorted(lst):
     return all(lst[i] <= lst[i+1] for i in range(len(lst)-1))
 import types
+# Initialiser le DataFrame pour stocker les scores
+scores = pd.DataFrame(columns=['Algorithme', 'Temps d\'exécution'])
 
 # Tester un algorithme de tri
 def test_sorting_algorithm(algorithm, lst):
@@ -38,9 +41,15 @@ def contest():
             continue
         execution_time = test_sorting_algorithm(getattr(sort_pack, algorithm), lst)
         if execution_time is not None:
-            print(f"L'algorithme {algorithm} a trié la liste en {execution_time} secondes.")
+            # Ajouter le score à la DataFrame
+            scores.loc[len(scores)] = [algorithm, execution_time]
         else:
             print(f"L'algorithme {algorithm} est disqualifié ou n'est pas une fonction.")
+
+    # Trier la DataFrame par temps d'exécution et attribuer les rangs
+    scores.sort_values(by='Temps d\'exécution', inplace=True)
+    scores['Rang'] = scores['Temps d\'exécution'].rank(method='min')
+    print(scores)
 
 # Lancer le concours
 contest()
