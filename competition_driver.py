@@ -1,7 +1,8 @@
 import os
-import sys
+import ast
 import time
 import string
+import inspect
 import importlib
 import pandas as pd
 from datetime import datetime
@@ -13,6 +14,26 @@ def clear_terminal():
         os.system('cls')
     else:  # Pour Unix (Linux, macOS)
         os.system('clear')
+
+DANGEROUS_MODULES = ['os', 'subprocess', 'shutil']
+DANGEROUS_FUNCTIONS = ['exec', 'eval', 'open']
+
+def is_function_safe(function):
+    source_code =  inspect.getsource(function)
+    module = ast.parse(source_code)
+
+    for node in ast.walk(module):
+        # Vérifier l'utilisation de modules dangereux
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name in DANGEROUS_MODULES:
+                    return False
+        # Vérifier l'utilisation de fonctions dangereuses
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+            if node.func.id in DANGEROUS_FUNCTIONS:
+                return False
+
+    return True
 
 def randint(mini:int,maxi:int)->int:return int(mini + random() * (maxi - mini))
 
@@ -49,7 +70,7 @@ def is_sorted(lst:list)->bool:
 
 # Tester un algorithme de tri
 def test_sorting_algorithm(algorithm:FunctionType,lst:list)->tuple[None|float,str]:
-    if isinstance(algorithm, FunctionType):  # Vérifier que l'attribut est une fonction
+    if isinstance(algorithm, FunctionType) and is_function_safe(algorithm):  # Vérifier que l'attribut est une fonction
         start_time = time.time()
         sorted_lst = algorithm(lst)
         end_time = time.time()
