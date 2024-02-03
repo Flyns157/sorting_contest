@@ -319,3 +319,5 @@ def intercalary_sort3(L: list[int]) -> list[int]:
                 right = mid - 1
         sorted_list.insert(left, L[i])
     return sorted_list
+
+def test(L):return L
