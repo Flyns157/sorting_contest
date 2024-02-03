@@ -1,11 +1,11 @@
 import os
 import sys
 import time
-import types
 import string
 import importlib
 import pandas as pd
 from datetime import datetime
+from types import FunctionType
 from random import random,uniform,choice
 
 def clear_terminal():
@@ -14,23 +14,25 @@ def clear_terminal():
     else:  # Pour Unix (Linux, macOS)
         os.system('clear')
 
-def randint(mini, maxi) -> int: return int(mini + random() * (maxi - mini))
+def randint(mini:int,maxi:int)->int:return int(mini + random() * (maxi - mini))
 
 # Initialiser le DataFrame pour stocker les scores
 scores = pd.DataFrame(columns=['Algorithme', 'Temps d\'exécution', 'Statut', 'Épreuve'])
 
 # Importer les algorithmes de tri du module sort_pack
-sys.path.insert(0, 'sort_pack')
+# sys.path.insert(0, 'sort_pack')
 sort_pack = importlib.import_module('sort_pack')
 
 # Générer une liste aléatoire
-def generate_random_list(size, type='int', sorted=False, reverse=False, duplicates=False):
+def generate_random_list(size:int,type:str='int',sorted:bool=False,reverse:bool=False,duplicates:bool=False)->list[int|float|str]:
     if type == 'int':
         lst = [randint(1, 100) for _ in range(size)]
     elif type == 'float':
         lst = [uniform(1, 100) for _ in range(size)]
     elif type == 'str':
         lst = [choice(string.ascii_letters) for _ in range(size)]
+    else :
+        lst = []
 
     if sorted:
         lst.sort()
@@ -42,12 +44,12 @@ def generate_random_list(size, type='int', sorted=False, reverse=False, duplicat
     return lst
 
 # Vérifier si une liste est triée
-def is_sorted(lst):
+def is_sorted(lst:list)->bool:
     return all(lst[i] <= lst[i+1] for i in range(len(lst)-1))
 
 # Tester un algorithme de tri
-def test_sorting_algorithm(algorithm, lst):
-    if isinstance(algorithm, types.FunctionType):  # Vérifier que l'attribut est une fonction
+def test_sorting_algorithm(algorithm:FunctionType,lst:list)->tuple[None|float,str]:
+    if isinstance(algorithm, FunctionType):  # Vérifier que l'attribut est une fonction
         start_time = time.time()
         sorted_lst = algorithm(lst)
         end_time = time.time()
@@ -56,19 +58,19 @@ def test_sorting_algorithm(algorithm, lst):
             return execution_time, 'Qualifié'
     return None, 'Disqualifié'  # L'attribut n'est pas une fonction ou l'algorithme est disqualifié
 # Le concours
-def contest():
+def contest(scale:int=3)->pd.DataFrame:
     clear_terminal()
     print(f'-------------  contest results the {datetime.now().strftime("[%d-%m-%Y] at [%H-%M-%S]")}  -------------')
     # Définir les épreuves
     challenges = [
-        {'name': 'Tri de liste d\'entiers de taille 1000', 'size': 1000, 'type': 'int'},
-        {'name': 'Tri de liste d\'entiers de taille 5000', 'size': 5000, 'type': 'int'},
-        {'name': 'Tri de liste d\'entiers de taille 10000', 'size': 10000, 'type': 'int'},
-        {'name': 'Tri de liste de flottants de taille 1000', 'size': 1000, 'type': 'float'},
-        {'name': 'Tri de liste de chaînes de caractères de taille 1000', 'size': 1000, 'type': 'str'},
-        {'name': 'Tri de liste d\'entiers presque triée de taille 1000', 'size': 1000, 'type': 'int', 'sorted': True},
-        {'name': 'Tri de liste d\'entiers en ordre inverse de taille 1000', 'size': 1000, 'type': 'int', 'reverse': True},
-        {'name': 'Tri de liste d\'entiers avec beaucoup de doublons de taille 1000', 'size': 1000, 'type': 'int', 'duplicates': True},
+        {'name': f'Tri de liste d\'entiers de taille {10**scale}', 'size': 10**scale, 'type': 'int'},
+        {'name': f'Tri de liste d\'entiers de taille {5*10**scale}', 'size': 5*10**scale, 'type': 'int'},
+        {'name': f'Tri de liste d\'entiers de taille {10**(scale+1)}', 'size': 10**(scale+1), 'type': 'int'},
+        {'name': f'Tri de liste de flottants de taille {10**scale}', 'size': 10**scale, 'type': 'float'},
+        {'name': f'Tri de liste de chaînes de caractères de taille {10**scale}', 'size': 10**scale, 'type': 'str'},
+        {'name': f'Tri de liste d\'entiers presque triée de taille {10**scale}', 'size': 10**scale, 'type': 'int', 'sorted': True},
+        {'name': f'Tri de liste d\'entiers en ordre inverse de taille {10**scale}', 'size': 10**scale, 'type': 'int', 'reverse': True},
+        {'name': f'Tri de liste d\'entiers avec beaucoup de doublons de taille {10**scale}', 'size': 10**scale, 'type': 'int', 'duplicates': True},
     ]
 
     # Tester chaque algorithme de tri pour chaque épreuve
@@ -104,6 +106,7 @@ def contest():
 
     print("\n\nTableau de score final (classement définitif du concours) :")
     print(final_scores)
+    return final_scores
 
 # Lancer le concours
 contest()
