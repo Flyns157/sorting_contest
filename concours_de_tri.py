@@ -1,10 +1,11 @@
 import sys
 import time
 import types
-from random import random,uniform,choice
 import string
 import importlib
 import pandas as pd
+from datetime import datetime
+from random import random,uniform,choice
 
 def randint(mini, maxi) -> int: return int(mini + random() * (maxi - mini))
 
@@ -81,3 +82,6 @@ def contest():
 
 # Lancer le concours
 contest()
+
+# Enregistrez le DataFrame dans un fichier CSV
+scores.to_csv(f'results/contest_results{datetime.now().strftime("[%d-%m-%Y][%H-%M-%S]")}.csv', index=False)
