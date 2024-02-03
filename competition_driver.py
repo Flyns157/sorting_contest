@@ -93,6 +93,18 @@ def contest():
         print(f"Tableau des scores pour l'épreuve de {challenge['name']} :")
         print(current_challenge_scores)
 
+    # Calculer le temps d'exécution moyen pour chaque algorithme
+    average_scores = scores.groupby('Algorithme')['Temps d\'exécution'].mean()
+
+    # Créer le tableau de score final
+    final_scores = pd.DataFrame(average_scores).reset_index()
+    final_scores.columns = ['Algorithme', 'Temps d\'exécution moyen']
+    final_scores.sort_values(by='Temps d\'exécution moyen', inplace=True)
+    final_scores['Rang final'] = final_scores['Temps d\'exécution moyen'].rank(method='min')
+
+    print("\n\nTableau de score final (classement définitif du concours) :")
+    print(final_scores)
+
 # Lancer le concours
 contest()
 
