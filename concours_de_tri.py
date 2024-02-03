@@ -1,10 +1,12 @@
 import sys
 import time
 import types
-import random
+from random import random,uniform,choice
 import string
 import importlib
 import pandas as pd
+
+def randint(mini, maxi) -> int: return int(mini + random() * (maxi - mini))
 
 # Initialiser le DataFrame pour stocker les scores
 scores = pd.DataFrame(columns=['Algorithme', 'Temps d\'exécution', 'Statut', 'Épreuve'])
@@ -16,11 +18,11 @@ sort_pack = importlib.import_module('sort_pack')
 # Générer une liste aléatoire
 def generate_random_list(size, type='int', sorted=False, reverse=False, duplicates=False):
     if type == 'int':
-        lst = [random.randint(1, 100) for _ in range(size)]
+        lst = [randint(1, 100) for _ in range(size)]
     elif type == 'float':
-        lst = [random.uniform(1, 100) for _ in range(size)]
+        lst = [uniform(1, 100) for _ in range(size)]
     elif type == 'str':
-        lst = [random.choice(string.ascii_letters) for _ in range(size)]
+        lst = [choice(string.ascii_letters) for _ in range(size)]
 
     if sorted:
         lst.sort()
@@ -45,7 +47,6 @@ def test_sorting_algorithm(algorithm, lst):
         if is_sorted(sorted_lst):
             return execution_time, 'Qualifié'
     return None, 'Disqualifié'  # L'attribut n'est pas une fonction ou l'algorithme est disqualifié
-
 # Le concours
 def contest():
     # Définir les épreuves
@@ -70,11 +71,13 @@ def contest():
             # Ajouter le score et le statut à la DataFrame
             scores.loc[len(scores)] = [algorithm, execution_time, status, str(challenge)]
 
-    # Trier la DataFrame par temps d'exécution et attribuer les rangs
-    scores.sort_values(by='Temps d\'exécution', inplace=True, na_position='last')
-    scores['Rang'] = scores['Temps d\'exécution'].rank(method='min')
+        # Trier la DataFrame par temps d'exécution et attribuer les rangs pour l'épreuve actuelle
+        current_challenge_scores = scores[scores['Épreuve'] == str(challenge)]
+        current_challenge_scores.sort_values(by='Temps d\'exécution', inplace=True, na_position='last')
+        current_challenge_scores['Rang'] = current_challenge_scores['Temps d\'exécution'].rank(method='min')
 
-    print(scores)
+        print(f"Tableau des scores pour l'épreuve {challenge} :")
+        print(current_challenge_scores)
 
 # Lancer le concours
 contest()
