@@ -28,7 +28,7 @@ def test_sorting_algorithm(algorithm, lst):
         # print(lst,algorithm.__name__,sorted_lst) #DEBUG
         end_time = time.time()
         execution_time = end_time - start_time
-        if is_sorted(sorted_lst):
+        if sorted_lst == sorted(lst):
             return execution_time, 'Qualifié'
     return None, 'Disqualifié'  # L'attribut n'est pas une fonction ou l'algorithme est disqualifié
 
