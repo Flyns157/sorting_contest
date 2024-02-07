@@ -1,5 +1,6 @@
 import os
 import ast
+import glob
 import time
 import signal
 import string
@@ -19,6 +20,22 @@ def clear_terminal():
 DANGEROUS_MODULES = ['os', 'subprocess', 'shutil']
 DANGEROUS_FUNCTIONS = ['exec', 'eval', 'open']
 
+def fusion()->importlib.ModuleType:
+    # Trouver tous les fichiers .py dans le répertoire /participation
+    files = glob.glob("/participation/*.py")
+
+    # Ouvrir le fichier de sortie en mode écriture
+    with open("participant_sort.py", "w") as outfile:
+        for file in files:
+            # Ouvrir chaque fichier .py et copier son contenu dans le fichier de sortie
+            with open(file, "r") as infile:
+                outfile.write(infile.read())
+                # Ajouter une nouvelle ligne à la fin pour séparer les fichiers
+                outfile.write("\n")
+    return importlib.import_module('participant_sort')
+
+def randint(mini:int,maxi:int)->int:return int(mini + random() * (maxi - mini))
+
 def is_function_safe(function):
     source_code =  inspect.getsource(function)
     module = ast.parse(source_code)
@@ -35,15 +52,6 @@ def is_function_safe(function):
                 return False
 
     return True
-
-def randint(mini:int,maxi:int)->int:return int(mini + random() * (maxi - mini))
-
-# Initialiser le DataFrame pour stocker les scores
-scores = pd.DataFrame(columns=['Algorithme', 'Temps d\'exécution', 'Statut', 'Épreuve'])
-
-# Importer les algorithmes de tri du module sort_pack
-# sys.path.insert(0, 'sort_pack')
-sort_pack = importlib.import_module('sort_pack')
 
 # Générer une liste aléatoire
 def generate_random_list(size:int,type:str='int',sorted:bool=False,reverse:bool=False,duplicates:bool=False)->list[int|float|str]:
@@ -100,6 +108,12 @@ def test_sorting_algorithm(algorithm, lst):
 
 # Le concours
 def contest(scale:int=3)->pd.DataFrame:
+    # Initialiser le DataFrame pour stocker les scores
+    scores = pd.DataFrame(columns=['Algorithme', 'Temps d\'exécution', 'Statut', 'Épreuve'])
+
+    # Importer les algorithmes
+    sort_pack = fusion()
+    
     clear_terminal()
     print(f'-------------  contest results the {datetime.now().strftime("[%d-%m-%Y] at [%H-%M-%S]")}  -------------')
     # Définir les épreuves
@@ -147,10 +161,11 @@ def contest(scale:int=3)->pd.DataFrame:
 
     print("\n\nTableau de score final (classement définitif du concours) :")
     print(final_scores)
+
+    # Enregistrez le DataFrame dans un fichier CSV
+    scores.to_csv(f'results/contest_results{datetime.now().strftime("[%d-%m-%Y][%H-%M-%S]")}.csv', index=False)
+
     return final_scores
 
 # Lancer le concours
-contest()
-
-# Enregistrez le DataFrame dans un fichier CSV
-scores.to_csv(f'results/contest_results{datetime.now().strftime("[%d-%m-%Y][%H-%M-%S]")}.csv', index=False)
+# contest()
