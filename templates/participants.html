@@ -7,10 +7,14 @@
 </head>
 <body>
     <h1>Liste des participants</h1>
+    {% if participants %}
     <ul>
     {% for participant in participants %}
         <li>{{ participant }}</li>
     {% endfor %}
     </ul>
+    {% else %}
+    <h3>Aucun participant</h3>
+    {% endif %}
 </body>
 </html>
