@@ -163,3 +163,4 @@ cython_debug/
 # Project
 *.ipynb
 results/
+participant_sort.py
