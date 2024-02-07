@@ -20,7 +20,7 @@ def clear_terminal():
 DANGEROUS_MODULES = ['os', 'subprocess', 'shutil']
 DANGEROUS_FUNCTIONS = ['exec', 'eval', 'open']
 
-def fusion()->importlib.ModuleType:
+def fusion():
     # Trouver tous les fichiers .py dans le répertoire /participation
     files = glob.glob("/participation/*.py")
 
@@ -113,7 +113,7 @@ def contest(scale:int=3)->pd.DataFrame:
 
     # Importer les algorithmes
     sort_pack = fusion()
-    
+
     clear_terminal()
     print(f'-------------  contest results the {datetime.now().strftime("[%d-%m-%Y] at [%H-%M-%S]")}  -------------')
     # Définir les épreuves

@@ -1,7 +1,7 @@
 import os
 import glob
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify, send_from_directory, abort, render_template
+from flask import Flask, request, jsonify, send_from_directory, abort, render_template, redirect, url_for
 from werkzeug.utils import secure_filename
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -82,6 +82,9 @@ def contest():
         return jsonify({"message": "Unauthorized"}), 403
     competition_driver.contest()
     return jsonify({"message": "Contest started"}), 200
+
+@app.route('/')
+def index():return redirect(url_for('participants'))
 
 @app.route('/participants', methods=['GET'])
 def participants():
