@@ -2,9 +2,9 @@ import os
 import ast
 import glob
 import time
-import signal
 import string
 import inspect
+import threading
 import importlib
 import pandas as pd
 from datetime import datetime
@@ -88,19 +88,26 @@ def test_sorting_algorithm(algorithm, lst):
     if not is_function_safe(algorithm):return None, 'Disqualifié (fonction dangereuse)'
     if isinstance(algorithm, FunctionType):  # Vérifier que l'attribut est une fonction
         try:
-            # Définir le signal de timeout
-            signal.signal(signal.SIGALRM, handler)
-            signal.alarm(600)  # Définir un timeout de 10 minutes
+            result = []
+            def run_algorithm():
+                start_time = time.time()
+                sorted_lst = algorithm(lst)
+                end_time = time.time()
+                execution_time = end_time - start_time
+                result.append((sorted_lst, execution_time))
 
-            start_time = time.time()
-            sorted_lst = algorithm(lst)
-            end_time = time.time()
+            thread = threading.Thread(target=run_algorithm)
+            thread.start()
 
-            # Désactiver le signal de timeout
-            signal.alarm(0)
+            # Attendre jusqu'à 600 secondes pour que le thread se termine
+            thread.join(600)
 
-            execution_time = end_time - start_time
-            if is_sorted(sorted_lst):
+            if thread.is_alive():
+                return None, 'Disqualifié (timeout)'
+
+            sorted_lst, execution_time = result[0]
+            
+            if sorted_lst==sorted(lst):
                 return execution_time, 'Qualifié'
             else:
                 return None, 'Disqualifié (la liste n\'est pas triée)'
@@ -138,7 +145,7 @@ def contest(scale:int=3)->pd.DataFrame:
         for algorithm in dir(sort_pack):
             if algorithm.startswith('__'):
                 continue
-            execution_time, status = test_sorting_algorithm(getattr(sort_pack, algorithm), lst)
+            execution_time, status = test_sorting_algorithm(getattr(sort_pack, algorithm), lst[:])
             # Ajouter le score et le statut à la DataFrame
             scores.loc[len(scores)] = [algorithm, execution_time, status, challenge['name']]
 
