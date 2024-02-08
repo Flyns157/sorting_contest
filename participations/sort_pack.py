@@ -308,7 +308,7 @@ def intercalary_sort2(L: list[int]) -> list[int]:
 
 def intercalary_sort3(L: list[int]) -> list[int]:
     sorted_list = [L[0]]
-    for i in range(len(L)):
+    for i in range(1,len(L)):
         left = 0
         right = len(sorted_list) - 1
         while left <= right:
