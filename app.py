@@ -16,6 +16,7 @@ auth = HTTPBasicAuth()
 users = {
     "admin": generate_password_hash(os.getenv('ADMIN_PASSWORD'))
 }
+users_participations = {"admin":["sort_pack.py"]}
 
 @auth.verify_password
 def verify_password(username, password):
@@ -35,6 +36,12 @@ def participate():
         return 'File type not supported.', 400
     filename = secure_filename(file.filename)
     file.save('/participations/' + filename)
+    
+    # Enregistrement de la participation de l'utilisateur
+    if auth.current_user() in users_participations:
+        users_participations[auth.current_user()].append(filename)
+    else:
+        users_participations[auth.current_user()] = [filename]
     return 'File uploaded successfully.', 200
 
 @app.route('/register', methods=['POST'])
@@ -75,12 +82,15 @@ def download_datetime(date, time):
     else:
         return send_from_directory(app.static_folder, filename=os.path.basename(files[0]), as_attachment=True)
 
+import threading
 @app.route('/contest', methods=['POST'])
 @auth.login_required
 def contest():
     if auth.current_user() != 'admin':
         return jsonify({"message": "Unauthorized"}), 403
-    competition_driver.contest()
+    
+    threading.Thread(target=competition_driver.contest).start()
+    
     return jsonify({"message": "Contest started"}), 200
 
 @app.route('/')
